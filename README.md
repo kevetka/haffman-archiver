@@ -1,1 +1,1 @@
-# Haffman-Archiver
+# Huffman-Archiver
