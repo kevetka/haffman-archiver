@@ -37,12 +37,12 @@ impl Node {
         }
     }
 
-    pub fn new_internal(left: Node, right: Node) -> Self {
+    pub fn new_internal(left: Box<Node>, right: Box<Node>) -> Self {
         Node {
             weight: left.weight + right.weight,
             symbol: None,
-            left: Some(Box::new(left)),
-            right: Some(Box::new(right)),
+            left: Some(left),
+            right: Some(right),
         }
     }
 }
@@ -52,22 +52,29 @@ pub fn build_huffman_tree(frequencies: [u64; 256]) -> Option<Box<Node>> {
 
     for (byte, &freq) in frequencies.iter().enumerate() {
         if freq > 0 {
-            let node = Node::new_leaf(byte as u8, freq);
-            heap.push(Box::new(node));
+            heap.push(Box::new(Node::new_leaf(byte as u8, freq)));
         }
     }
 
-    if heap.is_empty() {
-        return None;
+    match heap.len() {
+        0 => return None,
+        1 => {
+            let single = heap.pop().unwrap();
+            return Some(Box::new(Node {
+                weight: single.weight,
+                symbol: None,
+                left: Some(single),
+                right: None,
+            }));
+        }
+        _ => {}
     }
 
     while heap.len() > 1 {
         let left = heap.pop().unwrap();
         let right = heap.pop().unwrap();
 
-        let parent = Node::new_internal(*left, *right);
-
-        heap.push(Box::new(parent));
+        heap.push(Box::new(Node::new_internal(left, right)));
     }
 
     Some(heap.pop().unwrap())
